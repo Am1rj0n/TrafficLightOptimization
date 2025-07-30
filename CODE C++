@@ -1,0 +1,85 @@
+#include <iostream>
+#include <limits>
+#include <iomanip>
+
+using namespace std;
+
+const double SAT_FLOW_RATE = 1800.0 / 3600.0; // 1800 cars/hour → 0.5 cars/sec
+
+struct SimulationResult {
+    int green1stAve;
+    int greenCross;
+    int cycleLength;
+    long long wait1stAve;
+    long long waitCross;
+    long long totalWait;
+};
+
+long long calculateWaitTime(double lambda_per_hour, int greenTime, int cycleTime, int durationSec) {
+    double lambda = lambda_per_hour / 3600.0; // convert to cars/sec
+    int redTime = cycleTime - greenTime;
+    double queue = 0;
+    long long totalWait = 0;
+
+    for (int t = 0; t < durationSec; t += cycleTime) {
+        // Green phase
+        for (int g = 0; g < greenTime; ++g) {
+            queue += lambda;
+            double clear = min(queue, SAT_FLOW_RATE);
+            queue -= clear;
+            totalWait += static_cast<long long>(queue);
+        }
+
+        // Red phase
+        for (int r = 0; r < redTime; ++r) {
+            queue += lambda;
+            totalWait += static_cast<long long>(queue);
+        }
+    }
+
+    return totalWait;
+}
+
+SimulationResult simulateIntersection(double lambda1stAve_per_hr, double lambdaCross_per_hr, int durationSec = 3600) {
+    SimulationResult best = {};
+    best.totalWait = LLONG_MAX;
+
+    for (int cycle = 60; cycle <= 120; cycle += 5) {
+        for (int green1st = 20; green1st <= cycle - 20; green1st += 5) {
+            int greenCross = cycle - green1st;
+
+            long long wait1 = calculateWaitTime(lambda1stAve_per_hr, green1st, cycle, durationSec);
+            long long wait2 = calculateWaitTime(lambdaCross_per_hr, greenCross, cycle, durationSec);
+            long long combined = wait1 + wait2;
+
+            if (combined < best.totalWait) {
+                best = {green1st, greenCross, cycle, wait1, wait2, combined};
+            }
+        }
+    }
+
+    return best;
+}
+
+int main() {
+    double volume1stAve, volumeCross;
+
+    cout << "Enter traffic volume (cars/hour) for 1st Ave: ";
+    cin >> volume1stAve;
+
+    cout << "Enter traffic volume (cars/hour) for E30th St: ";
+    cin >> volumeCross;
+
+    SimulationResult result = simulateIntersection(volume1stAve, volumeCross);
+
+    cout << fixed << setprecision(2);
+    cout << "\n Best Signal Timing Results:\n";
+    cout << " 1st Ave Green Time: " << result.green1stAve << " sec\n";
+    cout << " Cross Street Green Time: " << result.greenCross << " sec\n";
+    cout << " Total Cycle Length: " << result.cycleLength << " sec\n";
+    cout << " Wait Time 1st Ave: " << result.wait1stAve << " car-seconds\n";
+    cout << " Wait Time E30th St: " << result.waitCross << " car-seconds\n";
+    cout << " Combined Wait: " << result.totalWait << " car-seconds\n";
+
+    return 0;
+}
