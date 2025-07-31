@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const double SAT_FLOW_RATE = 1800.0 / 3600.0; // 1800 cars/hour → 0.5 cars/sec
+const double SAT_FLOW_RATE = 1.0; // 1 car/sec
 
 struct SimulationResult {
     int green1stAve;
@@ -16,7 +16,7 @@ struct SimulationResult {
 };
 
 long long calculateWaitTime(double lambda_per_hour, int greenTime, int cycleTime, int durationSec) {
-    double lambda = lambda_per_hour / 3600.0; // convert to cars/sec
+    double lambda = lambda_per_hour / 3600.0; // cars per second
     int redTime = cycleTime - greenTime;
     double queue = 0;
     long long totalWait = 0;
@@ -44,17 +44,17 @@ SimulationResult simulateIntersection(double lambda1stAve_per_hr, double lambdaC
     SimulationResult best = {};
     best.totalWait = LLONG_MAX;
 
-    for (int cycle = 90; cycle <= 90; cycle += 5) {
-        for (int green1st = 20; green1st <= cycle - 20; green1st += 5) {
-            int greenCross = cycle - green1st;
+    const int cycle = 90;  // fixed total cycle length
 
-            long long wait1 = calculateWaitTime(lambda1stAve_per_hr, green1st, cycle, durationSec);
-            long long wait2 = calculateWaitTime(lambdaCross_per_hr, greenCross, cycle, durationSec);
-            long long combined = wait1 + wait2;
+    for (int green1st = 10; green1st <= cycle - 10; ++green1st) {  // step size = 1 sec
+        int greenCross = cycle - green1st;
 
-            if (combined < best.totalWait) {
-                best = {green1st, greenCross, cycle, wait1, wait2, combined};
-            }
+        long long wait1 = calculateWaitTime(lambda1stAve_per_hr, green1st, cycle, durationSec);
+        long long wait2 = calculateWaitTime(lambdaCross_per_hr, greenCross, cycle, durationSec);
+        long long combined = wait1 + wait2;
+
+        if (combined < best.totalWait) {
+            best = {green1st, greenCross, cycle, wait1, wait2, combined};
         }
     }
 
@@ -83,3 +83,4 @@ int main() {
 
     return 0;
 }
+
