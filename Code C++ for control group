@@ -39,7 +39,7 @@ int main() {
     double volume1stAve, volumeCross;
     int green1stAve, cycleLength;
 
-    cout << "CONTROL GROUP SIMULATION\n";
+    cout << "SIMULATION RESULTS\n";
     cout << "-------------------------\n";
     cout << "Enter traffic volume for 1st Ave (cars/hour): ";
     cin >> volume1stAve;
