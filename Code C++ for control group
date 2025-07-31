@@ -1,0 +1,75 @@
+#include <iostream>
+#include <limits>
+#include <iomanip>
+
+using namespace std;
+
+const double SAT_FLOW_RATE = 1800.0 / 3600.0; // 0.5 cars/sec
+
+long long calculateWaitTime(double lambda_per_hour, int greenTime, int cycleTime, int durationSec, double& avgWaitOut) {
+    double lambda = lambda_per_hour / 3600.0; // cars/sec
+    int redTime = cycleTime - greenTime;
+    double queue = 0;
+    long long totalWait = 0;
+    double totalCars = 0;
+
+    for (int t = 0; t < durationSec; t += cycleTime) {
+        // Green phase
+        for (int g = 0; g < greenTime; ++g) {
+            queue += lambda;
+            double cleared = min(queue, SAT_FLOW_RATE);
+            queue -= cleared;
+            totalWait += static_cast<long long>(queue);
+            totalCars += lambda;
+        }
+
+        // Red phase
+        for (int r = 0; r < redTime; ++r) {
+            queue += lambda;
+            totalWait += static_cast<long long>(queue);
+            totalCars += lambda;
+        }
+    }
+
+    avgWaitOut = totalCars > 0 ? totalWait / totalCars : 0;
+    return totalWait;
+}
+
+int main() {
+    double volume1stAve, volumeCross;
+    int green1stAve, cycleLength;
+
+    cout << "CONTROL GROUP SIMULATION\n";
+    cout << "-------------------------\n";
+    cout << "Enter traffic volume for 1st Ave (cars/hour): ";
+    cin >> volume1stAve;
+
+    cout << "Enter traffic volume for E30th St (cars/hour): ";
+    cin >> volumeCross;
+
+    cout << "Enter green time for 1st Ave (seconds): ";
+    cin >> green1stAve;
+
+    cout << "Enter total cycle length (seconds): ";
+    cin >> cycleLength;
+
+    int greenCross = cycleLength - green1stAve;
+
+    double avgWait1 = 0, avgWait2 = 0;
+
+    long long wait1 = calculateWaitTime(volume1stAve, green1stAve, cycleLength, 3600, avgWait1);
+    long long wait2 = calculateWaitTime(volumeCross, greenCross, cycleLength, 3600, avgWait2);
+
+    cout << fixed << setprecision(2);
+    cout << "\n--- CONTROL GROUP RESULTS ---\n";
+    cout << "Green Time 1st Ave: " << green1stAve << " sec\n";
+    cout << "Green Time E30th St: " << greenCross << " sec\n";
+    cout << "Cycle Length: " << cycleLength << " sec\n\n";
+    cout << "1st Ave Wait: " << wait1 << " car-seconds\n";
+    cout << "E30th St Wait: " << wait2 << " car-seconds\n";
+    cout << "Combined Wait: " << (wait1 + wait2) << " car-seconds\n\n";
+    cout << "Average Wait 1st Ave: " << avgWait1 << " seconds/car\n";
+    cout << "Average Wait E30th St: " << avgWait2 << " seconds/car\n";
+
+    return 0;
+}
