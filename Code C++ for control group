@@ -61,7 +61,7 @@ int main() {
     long long wait2 = calculateWaitTime(volumeCross, greenCross, cycleLength, 3600, avgWait2);
 
     cout << fixed << setprecision(2);
-    cout << "\n--- CONTROL GROUP RESULTS ---\n";
+    cout << "\n--- SIMULATION RESULTS ---\n";
     cout << "Green Time 1st Ave: " << green1stAve << " sec\n";
     cout << "Green Time E30th St: " << greenCross << " sec\n";
     cout << "Cycle Length: " << cycleLength << " sec\n\n";
