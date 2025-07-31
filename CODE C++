@@ -44,7 +44,7 @@ SimulationResult simulateIntersection(double lambda1stAve_per_hr, double lambdaC
     SimulationResult best = {};
     best.totalWait = LLONG_MAX;
 
-    for (int cycle = 60; cycle <= 120; cycle += 5) {
+    for (int cycle = 90; cycle <= 90; cycle += 5) {
         for (int green1st = 20; green1st <= cycle - 20; green1st += 5) {
             int greenCross = cycle - green1st;
 
